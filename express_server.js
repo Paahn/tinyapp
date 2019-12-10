@@ -30,6 +30,11 @@ app.get("/set", (req, res) => {
   res.send(`a = ${a}`);
  });
 
+ app.get("/urls", (req, res) => {
+  let templateVars = { urls: urlDatabase }; // IMPORTANT when we are sending a variable to and EJS template, we need
+  res.render("urls_index", templateVars); // to enclose it in an object, even if we are sending only one variable.
+ }); // (continued from comment above) this is so we can use the key of that object in our template
+
 app.listen(PORT, () => {
   console.log(`Example app listening on port: ${PORT}!`);
 });
