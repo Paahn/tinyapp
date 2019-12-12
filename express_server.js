@@ -13,6 +13,8 @@ const urlDatabase = {
 const bodyParser = require("body-parser");
 app.use(bodyParser.urlencoded({ extended: true }));
 
+app.use(cookieParser());
+
 // Function to generate a random string for new shortURLS
 function generateRandomString() {
   return Math.random().toString(36).replace(/[^a-z]+/g, '').substr(0, 5);
@@ -29,7 +31,7 @@ app.get("/urls/new", (req, res) => {
 
 app.get("/urls", (req, res) => {
   let templateVars = {
-    username: req.cookies,
+    username: req.cookies["username"],
     urls: urlDatabase
   }; // IMPORTANT when we are sending a variable to and EJS template, we need
   res.render("urls_index", templateVars); // to enclose it in an object, even if we are sending only one variable.
@@ -43,7 +45,7 @@ app.post("/urls", (req, res) => {
 });
 
 app.get("/urls/:id", (req, res) => {
-  let templateVars = {
+  let templateVars = {  
     username: req.cookies,
     shortURL: req.params.id,
     longURL: urlDatabase[req.params.id]
@@ -98,7 +100,7 @@ app.post("/urls/:shortURL/delete", (req, res) => {
 });
 
 app.post("/login", (req, res) => {
-  res.cookie("username", "whatever");
+  res.cookie("username", req.body.username);
   res.redirect('/urls');
 })
 
