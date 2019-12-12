@@ -1,6 +1,7 @@
 const express = require('express');
 const app = express();
 const PORT = 8080; // we're setting the default port at 8080
+const cookieParser = require('cookie-parser')
 
 app.set("view engine", "ejs")
 
@@ -68,12 +69,22 @@ app.post("/urls", (req, res) => {
   let newShortURL = generateRandomString();
   urlDatabase[newShortURL] = { longURL: [req.params.longURL] }
   res.redirect(`/urls/${newShortURL}`); // Redirect to the new shortURL page
-})
+});
 
 app.post("/urls/:shortURL/delete", (req, res) => {
   delete urlDatabase[req.params.shortURL];
   res.redirect('/urls');
+});
+
+app.post("/login", (req, res) => {
+  res.cookie("username", "whatever");
+  res.redirect('/urls');
 })
+
+// app.get("/see-cookies", (req, res) => {
+//   res.cookie("Panos", "SKJHDJSDUIAIUDHJADAJ")
+//   res.send("hahahdhahdahahhdhahh");
+// })
 
 
 app.listen(PORT, () => {
