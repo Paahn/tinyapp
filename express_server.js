@@ -11,7 +11,7 @@ const urlDatabase = {
 }
 
 const bodyParser = require("body-parser");
-app.use(bodyParser.urlencoded({extended: true}));
+app.use(bodyParser.urlencoded({ extended: true }));
 
 // Function to generate a random string for new shortURLS
 function generateRandomString() {
@@ -23,18 +23,44 @@ app.get("/", (req, res) => {
   res.send("Hello, mortal.");
 });
 
-app.post("/urls", (req, res) => {
-  console.log(req.body);  // Log the POST request body to the console
-  res.send("Ok");         // Respond with 'Ok' (we will replace this)
+app.get("/urls/new", (req, res) => {
+  res.render("urls_new");
+});
+
+app.get("/urls", (req, res) => {
+  let templateVars = {
+    username: req.cookies,
+    urls: urlDatabase
+  }; // IMPORTANT when we are sending a variable to and EJS template, we need
+  res.render("urls_index", templateVars); // to enclose it in an object, even if we are sending only one variable.
+}); // (continued from comment above) this is so we can use the key of that object in our template
+
+// this post will get the input from the /urls/new input form  
+app.post("/urls", (req, res) => {   
+  let randomString = generateRandomString();
+  urlDatabase[randomString] = req.body.longURL;
+  res.redirect(`/urls/${randomString}`);
+});
+
+app.get("/urls/:id", (req, res) => {
+  let templateVars = {
+    username: req.cookies,
+    shortURL: req.params.id,
+    longURL: urlDatabase[req.params.id]
+  };
+  res.render("urls_show", templateVars);
+});
+
+app.post("/urls/:id", (req, res) => {
+  console.log(req.body);
+  urlDatabase[req.params.id] = req.body.longURL;
+  res.redirect('/urls');
 });
 
 app.get("/urls.json", (req, res) => {
   res.json(urlDatabase);
 });
 
-app.get("/urls/new", (req, res) => {
-  res.render("urls_new");
-});
 
 app.get("/hello", (req, res) => {
   res.send("<html><body>Hello <b>Boyos</b></body></html>\n");
@@ -43,18 +69,13 @@ app.get("/hello", (req, res) => {
 app.get("/set", (req, res) => {
   const a = 1;
   res.send(`a = ${a}`);
- });
- 
- app.get("/fetch", (req, res) => {
-  res.send(`a = ${a}`);
- });
+});
 
- app.get("/urls", (req, res) => {
-  let templateVars = { urls: urlDatabase }; // IMPORTANT when we are sending a variable to and EJS template, we need
-  res.render("urls_index", templateVars); // to enclose it in an object, even if we are sending only one variable.
- }); // (continued from comment above) this is so we can use the key of that object in our template
- 
- app.get("/urls/:shortURL", (req, res) => {
+app.get("/fetch", (req, res) => {
+  res.send(`a = ${a}`);
+});
+
+app.get("/urls/:shortURL", (req, res) => {
   let templateVars = { shortURL: req.params.shortURL, longURL: urlDatabase[req.params.shortURL] };
   res.render("urls_show", templateVars);
 });
@@ -80,11 +101,6 @@ app.post("/login", (req, res) => {
   res.cookie("username", "whatever");
   res.redirect('/urls');
 })
-
-// app.get("/see-cookies", (req, res) => {
-//   res.cookie("Panos", "SKJHDJSDUIAIUDHJADAJ")
-//   res.send("hahahdhahdahahhdhahh");
-// })
 
 
 app.listen(PORT, () => {

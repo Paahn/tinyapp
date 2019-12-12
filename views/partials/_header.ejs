@@ -11,8 +11,9 @@
       </div>
     </div>
     <form method="POST" action="/login">
-      <input type="text" name="username">
+      <input id="username" type="text" name="username">
       <input type="submit" name="login" value="login">
     </form>
+    <div>Current User: <%= username %></div>
   </nav>
 </header>
