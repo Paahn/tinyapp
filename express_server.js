@@ -32,7 +32,19 @@ const emailExists = (email, users) => {
     }
   }
   return false;
-}
+};
+
+const getUserByEmail = (email, users) => {
+  console.log('email:', email);
+  for (const userID in users) {
+    console.log('userID:', userID);
+    console.log('user with that ID:', users[userID]);
+    if (users[userID].email === email) {
+      return users[userID];
+    }
+  }
+  return null;
+};
 
 // what bodyParser does is, it looks at the request body, and converts it into a 
 // javascript object. So we can access the object properties by dot notation or [""]!!!!!
@@ -52,12 +64,12 @@ app.get("/", (req, res) => {
 });
 
 app.get("/urls/new", (req, res) => {
-  res.render("urls_new", { username: req.cookies["username"] }); // See what I did there :smirk:
+  res.render("urls_new", { user_id: req.cookies["user_id"] }); // See what I did there :smirk:
 });
 
 app.get("/urls", (req, res) => {
   let templateVars = {
-    username: req.cookies["username"],
+    user_id: req.cookies["user_id"],
     urls: urlDatabase
   }; // IMPORTANT when we are sending a variable to and EJS template, we need
   res.render("urls_index", templateVars); // to enclose it in an object, even if we are sending only one variable.
@@ -72,7 +84,7 @@ app.post("/urls", (req, res) => {
 
 app.get("/urls/:id", (req, res) => {
   let templateVars = {
-    username: req.cookies,
+    user_id: req.cookies,
     shortURL: req.params.id,
     longURL: urlDatabase[req.params.id]
   };
@@ -125,29 +137,9 @@ app.post("/urls/:shortURL/delete", (req, res) => {
   res.redirect('/urls');
 });
 
-app.post("/login", (req, res) => {
-  res.cookie("username", req.body.username);
-  res.redirect('/urls');
-});
-
-app.get("/login", (req, res) => {
-  res.render("urls_login", { username: req.cookies["username"] });
-  res.redirect("/urls");
-});
-
-app.post("/logout", (req, res) => {
-  res.clearCookie("username");
-  res.redirect("/urls");
-});
-
-// app.get("/register", (req, res) => {
-//   res.cookie("username", req.body.username);
-//   res.render("urls_register");
-// });
-
 app.get("/register", (req, res) => {
   res.render("urls_register", { 
-    username: req.cookies["username"] 
+    user_id: req.cookies["user_id"] 
   });
 });
 
@@ -170,6 +162,63 @@ app.post("/register", (req, res) => {
     res.redirect("/urls");
   }
 });
+
+app.post("/login", (req, res) => {
+  const email = req.body.email;
+  const password = req.body.password;
+  if (!password || !email) {
+    res.status(400).send("Missing email and password");
+  } else {
+    const user = getUserByEmail(email, users);
+    console.log('inside login handler - user is:', user);
+    if (user && user.password === password) {
+      res.cookie('user_id', user.id);
+      res.redirect('/urls');
+    } else {
+      res.status(401).send('Invalid credentials');
+    }
+  }
+});
+
+app.get("/login", (req, res) => {
+  res.render("urls_login", { user_id: req.cookies["user_id"] });
+});
+
+app.post("/logout", (req, res) => {
+  res.clearCookie("user_id");
+  res.redirect("/urls");
+});
+
+// app.get("/register", (req, res) => {
+//   res.cookie("username", req.body.username);
+//   res.render("urls_register");
+// });
+
+// app.get("/register", (req, res) => {
+//   res.render("urls_register", { 
+//     user_id: req.cookies["user_id"] 
+//   });
+// });
+
+// app.post("/register", (req, res) => {
+//   const password = req.body.password;
+//   const email = req.body.email;
+//   if (!password || !email) {
+//     res.status(400).send("Missing email and password");
+//   } else if (emailExists(email, users)) {
+//     res.status(400).send('E-mail already in use');
+//   } else {
+//     const randomID = generateRandomString();
+//     users[randomID] = { 
+//       id: randomID,
+//       email: email,
+//       password: password 
+//     };
+//     console.log(users);
+//     res.cookie("user_id", randomID);
+//     res.redirect("/urls");
+//   }
+// });
 
 
 
