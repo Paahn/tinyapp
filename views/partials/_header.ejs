@@ -16,7 +16,7 @@
       <input type="submit" value="logout">
     </form>
     <% } %>
-    <% if (username === undefined) { %>
+    <% if (username === undefined || username === null) { %>
       <!-- <a class="nav-link" href="/login">Login</a> -->
       <form method="POST" action="/login">
         <input id="username" type="text" name="username">

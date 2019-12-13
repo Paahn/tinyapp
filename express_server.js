@@ -11,8 +11,8 @@ const urlDatabase = {
 }
 
 const users = {
-  "	pkvyb": {
-    id: "	pkvyb",
+  "pkvyb": {
+    id: "pkvyb",
     email: "user@example.com",
     password: "purple-monkey-dinosaur"
   },
@@ -21,7 +21,19 @@ const users = {
     email: "user2@example.com",
     password: "dishwasher-funk"
   }
-};
+}; 
+
+// const emailSearcher = (req, res, users) => {
+  
+//   for (let value of Object.keys(users){
+//     console.log(users["pikpa"]["email"]);
+//     console.log(users[value]);
+//     console.log(req.body.email);
+//     if (req.body.email === users["pikpa"]["email"] || req.body.email === users["pkvyb"]["email"]){
+//     return res.status(400).send("Error 400");
+//     }
+//   }
+// }
 
 const bodyParser = require("body-parser");
 app.use(bodyParser.urlencoded({ extended: true }));
@@ -149,6 +161,14 @@ app.post("/register", (req, res) => {
   if (req.body.password === "" || req.body.email === "") {
     res.status(400).send("Error 400");
   }
+  for (let value of Object.keys(users)){
+    console.log(users["pikpa"]["email"]);
+    console.log(users[value]);
+    console.log(req.body.email);
+    if (req.body.email === users["pikpa"]["email"] || req.body.email === users["pkvyb"]["email"]){
+    return res.status(400).send("Error 400");
+    }
+  };
   console.log(users);
   res.redirect("/urls");
 });
