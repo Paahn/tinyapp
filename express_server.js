@@ -37,9 +37,9 @@ const emailExists = (email, users) => {
 const getUserByEmail = (email, users) => {
   console.log('email:', email);
   for (const userID in users) {
-    console.log('userID:', userID);
-    console.log('user with that ID:', users[userID]);
     if (users[userID].email === email) {
+      console.log('userID:', userID);
+      console.log('user with that ID:', users[userID]);
       return users[userID];
     }
   }
@@ -64,7 +64,7 @@ app.get("/", (req, res) => {
 });
 
 app.get("/urls/new", (req, res) => {
-  res.render("urls_new", { user_id: req.cookies["user_id"] }); // See what I did there :smirk:
+  res.render("urls_new", { 'user_id': req.cookies["user_id"], 'user_email': req.cookies["user_email"] }); // See what I did there :smirk:
 });
 
 app.get("/urls", (req, res) => {
@@ -159,7 +159,6 @@ app.post("/register", (req, res) => {
       email: email,
       password: password 
     };
-    console.log(users);
     res.cookie("user_id", randomID);
     res.cookie("user_email", users[randomID].email); /////////////////////////
     res.redirect("/urls");
@@ -176,6 +175,7 @@ app.post("/login", (req, res) => {
     console.log('inside login handler - user is:', user);
     if (user && user.password === password) {
       res.cookie('user_id', user.id);
+      res.cookie('user_email', email);
       res.redirect('/urls');
     } else {
       res.status(401).send('Invalid credentials');
@@ -184,46 +184,14 @@ app.post("/login", (req, res) => {
 });
 
 app.get("/login", (req, res) => {
-  res.render("urls_login", { user_id: req.cookies["user_id"] });
+  res.render("urls_login", { 'user_id': req.cookies["user_id"] });
 });
 
 app.post("/logout", (req, res) => {
   res.clearCookie("user_id");
+  res.clearCookie("user_email");
   res.redirect("/urls");
 });
-
-// app.get("/register", (req, res) => {
-//   res.cookie("username", req.body.username);
-//   res.render("urls_register");
-// });
-
-// app.get("/register", (req, res) => {
-//   res.render("urls_register", { 
-//     user_id: req.cookies["user_id"] 
-//   });
-// });
-
-// app.post("/register", (req, res) => {
-//   const password = req.body.password;
-//   const email = req.body.email;
-//   if (!password || !email) {
-//     res.status(400).send("Missing email and password");
-//   } else if (emailExists(email, users)) {
-//     res.status(400).send('E-mail already in use');
-//   } else {
-//     const randomID = generateRandomString();
-//     users[randomID] = { 
-//       id: randomID,
-//       email: email,
-//       password: password 
-//     };
-//     console.log(users);
-//     res.cookie("user_id", randomID);
-//     res.redirect("/urls");
-//   }
-// });
-
-
 
 app.listen(PORT, () => {
   console.log(`Example app listening on port: ${PORT}!`);
