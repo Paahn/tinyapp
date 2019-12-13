@@ -23,18 +23,19 @@ const users = {
   }
 }; 
 
-const emailSearcher = (req, res, user) => {
-  
-  for (let value of Object.keys(user)) {
-    // console.log(users["pikpa"]["email"]);
-    // console.log(users[value]);
-    // console.log(req.body.email);
-    if (req.body.email === user["email"] || req.body.email === user["email"]){
-    return res.status(400).send("Error 400");
+const emailExists = (email, users) => {
+  console.log('email:', email);
+  for (const userID in users) {
+    console.log('user:', userID);
+    if (users[userID].email === email) {
+      return true;
     }
   }
+  return false;
 }
 
+// what bodyParser does is, it looks at the request body, and converts it into a 
+// javascript object. So we can access the object properties by dot notation or [""]!!!!!
 const bodyParser = require("body-parser");
 app.use(bodyParser.urlencoded({ extended: true }));
 
@@ -151,20 +152,23 @@ app.get("/register", (req, res) => {
 });
 
 app.post("/register", (req, res) => {
-  let user;
-  const randomID = generateRandomString();
-  users[randomID] = { 
-    id: randomID,
-    email: req.body.email,
-    password: req.body.password 
-  };
-  user = users[randomID];
-  if (req.body.password === "" || req.body.email === "") {
-    res.status(400).send("Error 400");
+  const password = req.body.password;
+  const email = req.body.email;
+  if (!password || !email) {
+    res.status(400).send("Missing email and password");
+  } else if (emailExists(email, users)) {
+    res.status(400).send('E-mail already in use');
+  } else {
+    const randomID = generateRandomString();
+    users[randomID] = { 
+      id: randomID,
+      email: email,
+      password: password 
+    };
+    console.log(users);
+    res.cookie("user_id", randomID);
+    res.redirect("/urls");
   }
-  emailSearcher(users);
-  res.cookie("user_id", randomID);
-  res.redirect("/urls");
 });
 
 
