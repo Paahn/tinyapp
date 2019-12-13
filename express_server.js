@@ -11,14 +11,14 @@ const urlDatabase = {
 }
 
 const users = {
-  "userRandomID": {
-    id: "userRandomID", 
-    email: "user@example.com", 
+  "	pkvyb": {
+    id: "	pkvyb",
+    email: "user@example.com",
     password: "purple-monkey-dinosaur"
   },
- "user2RandomID": {
-    id: "user2RandomID", 
-    email: "user2@example.com", 
+  "pikpa": {
+    id: "pikpa",
+    email: "user2@example.com",
     password: "dishwasher-funk"
   }
 };
@@ -39,7 +39,7 @@ app.get("/", (req, res) => {
 });
 
 app.get("/urls/new", (req, res) => {
-  res.render("urls_new", { username: req.cookies["username"]}); // See what I did there :smirk:
+  res.render("urls_new", { username: req.cookies["username"] }); // See what I did there :smirk:
 });
 
 app.get("/urls", (req, res) => {
@@ -133,18 +133,28 @@ app.post("/logout", (req, res) => {
 // });
 
 app.get("/register", (req, res) => {
-  res.render("urls_register", { username: req.cookies["username"]});
+  res.render("urls_register", { 
+    username: req.cookies["username"] 
+  });
 });
 
 app.post("/register", (req, res) => {
-users[generateRandomString()] = { id: generateRandomString(), email: `random@jamal.com`, password: `tiptoe` };
-res.cookie("user_id", generateRandomString());
-console.log(users);
-res.redirect("/urls");
+  const randomID = generateRandomString();
+  users[randomID] = { 
+    id: randomID,
+    email: req.body.email,
+    password: req.body.password 
+  };
+
+  if (req.body.password === "" || req.body.email === "") {
+    res.status(400).send("Error 400");
+  }
+  console.log(users);
+  res.redirect("/urls");
 });
 
 app.get("/login", (req, res) => {
-  res.render("urls_login", { username: req.cookies["username"]});
+  res.render("urls_login", { username: req.cookies["username"] });
 });
 
 
