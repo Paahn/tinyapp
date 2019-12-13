@@ -10,6 +10,19 @@ const urlDatabase = {
   "9sm5xK": "http://www.google.com"
 }
 
+const users = {
+  "userRandomID": {
+    id: "userRandomID", 
+    email: "user@example.com", 
+    password: "purple-monkey-dinosaur"
+  },
+ "user2RandomID": {
+    id: "user2RandomID", 
+    email: "user2@example.com", 
+    password: "dishwasher-funk"
+  }
+};
+
 const bodyParser = require("body-parser");
 app.use(bodyParser.urlencoded({ extended: true }));
 
@@ -26,7 +39,7 @@ app.get("/", (req, res) => {
 });
 
 app.get("/urls/new", (req, res) => {
-  res.render("urls_new");
+  res.render("urls_new", { username: req.cookies["username"]}); // See what I did there :smirk:
 });
 
 app.get("/urls", (req, res) => {
@@ -38,14 +51,14 @@ app.get("/urls", (req, res) => {
 }); // (continued from comment above) this is so we can use the key of that object in our template
 
 // this post will get the input from the /urls/new input form  
-app.post("/urls", (req, res) => {   
+app.post("/urls", (req, res) => {
   let randomString = generateRandomString();
   urlDatabase[randomString] = req.body.longURL;
   res.redirect(`/urls/${randomString}`);
 });
 
 app.get("/urls/:id", (req, res) => {
-  let templateVars = {  
+  let templateVars = {
     username: req.cookies,
     shortURL: req.params.id,
     longURL: urlDatabase[req.params.id]
@@ -107,11 +120,31 @@ app.post("/login", (req, res) => {
 app.get("/login", (req, res) => {
   res.cookie("username", req.body.username);
   res.redirect("/urls");
-})
+});
 
 app.post("/logout", (req, res) => {
   res.clearCookie("username");
   res.redirect("/urls");
+});
+
+// app.get("/register", (req, res) => {
+//   res.cookie("username", req.body.username);
+//   res.render("urls_register");
+// });
+
+app.get("/register", (req, res) => {
+  res.render("urls_register", { username: req.cookies["username"]});
+});
+
+app.post("/register", (req, res) => {
+users[generateRandomString()] = { id: generateRandomString(), email: `random@jamal.com`, password: `tiptoe` };
+res.cookie("user_id", generateRandomString());
+console.log(users);
+res.redirect("/urls");
+});
+
+app.get("/login", (req, res) => {
+  res.render("urls_login", { username: req.cookies["username"]});
 });
 
 
