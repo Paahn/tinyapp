@@ -23,17 +23,17 @@ const users = {
   }
 }; 
 
-// const emailSearcher = (req, res, users) => {
+const emailSearcher = (req, res, user) => {
   
-//   for (let value of Object.keys(users){
-//     console.log(users["pikpa"]["email"]);
-//     console.log(users[value]);
-//     console.log(req.body.email);
-//     if (req.body.email === users["pikpa"]["email"] || req.body.email === users["pkvyb"]["email"]){
-//     return res.status(400).send("Error 400");
-//     }
-//   }
-// }
+  for (let value of Object.keys(user)) {
+    // console.log(users["pikpa"]["email"]);
+    // console.log(users[value]);
+    // console.log(req.body.email);
+    if (req.body.email === user["email"] || req.body.email === user["email"]){
+    return res.status(400).send("Error 400");
+    }
+  }
+}
 
 const bodyParser = require("body-parser");
 app.use(bodyParser.urlencoded({ extended: true }));
@@ -130,7 +130,7 @@ app.post("/login", (req, res) => {
 });
 
 app.get("/login", (req, res) => {
-  res.cookie("username", req.body.username);
+  res.render("urls_login", { username: req.cookies["username"] });
   res.redirect("/urls");
 });
 
@@ -151,30 +151,20 @@ app.get("/register", (req, res) => {
 });
 
 app.post("/register", (req, res) => {
+  let user;
   const randomID = generateRandomString();
   users[randomID] = { 
     id: randomID,
     email: req.body.email,
     password: req.body.password 
   };
-
+  user = users[randomID];
   if (req.body.password === "" || req.body.email === "") {
     res.status(400).send("Error 400");
   }
-  for (let value of Object.keys(users)){
-    console.log(users["pikpa"]["email"]);
-    console.log(users[value]);
-    console.log(req.body.email);
-    if (req.body.email === users["pikpa"]["email"] || req.body.email === users["pkvyb"]["email"]){
-    return res.status(400).send("Error 400");
-    }
-  };
-  console.log(users);
+  emailSearcher(users);
+  res.cookie("user_id", randomID);
   res.redirect("/urls");
-});
-
-app.get("/login", (req, res) => {
-  res.render("urls_login", { username: req.cookies["username"] });
 });
 
 
