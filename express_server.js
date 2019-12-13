@@ -70,6 +70,7 @@ app.get("/urls/new", (req, res) => {
 app.get("/urls", (req, res) => {
   let templateVars = {
     user_id: req.cookies["user_id"],
+    user_email: req.cookies["user_email"],
     urls: urlDatabase
   }; // IMPORTANT when we are sending a variable to and EJS template, we need
   res.render("urls_index", templateVars); // to enclose it in an object, even if we are sending only one variable.
@@ -139,7 +140,8 @@ app.post("/urls/:shortURL/delete", (req, res) => {
 
 app.get("/register", (req, res) => {
   res.render("urls_register", { 
-    user_id: req.cookies["user_id"] 
+    user_id: req.cookies["user_id"],
+    user_email: req.cookies["email"] /////////////////////////
   });
 });
 
@@ -159,6 +161,7 @@ app.post("/register", (req, res) => {
     };
     console.log(users);
     res.cookie("user_id", randomID);
+    res.cookie("user_email", users[randomID].email); /////////////////////////
     res.redirect("/urls");
   }
 });
