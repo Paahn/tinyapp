@@ -21,7 +21,7 @@ const users = {
     email: "user2@example.com",
     password: "dishwasher-funk"
   }
-}; 
+};
 
 const emailExists = (email, users) => {
   console.log('email:', email);
@@ -64,14 +64,25 @@ app.get("/", (req, res) => {
 });
 
 app.get("/urls/new", (req, res) => {
-  res.render("urls_new", { 'user_id': req.cookies["user_id"], 'user_email': req.cookies["user_email"] }); // See what I did there :smirk:
+  // const user_email = req.cookies["email"];
+  let userID = req.cookies.user_id;
+  if (!userID || !users[userID]) {
+    res.redirect("/login");
+  } else {
+    let templateVars = {
+      user_email: users[userID].email,
+      user_id: userID
+    }
+    res.render("urls_new", templateVars); 
+  }
+
 });
 
 app.get("/urls", (req, res) => {
   let templateVars = {
-    user_id: req.cookies["user_id"],
-    user_email: req.cookies["user_email"],
-    urls: urlDatabase
+    'user_id': req.cookies["user_id"],
+    'user_email': req.cookies["user_email"],
+    'urls': urlDatabase
   }; // IMPORTANT when we are sending a variable to and EJS template, we need
   res.render("urls_index", templateVars); // to enclose it in an object, even if we are sending only one variable.
 }); // (continued from comment above) this is so we can use the key of that object in our template
@@ -139,9 +150,9 @@ app.post("/urls/:shortURL/delete", (req, res) => {
 });
 
 app.get("/register", (req, res) => {
-  res.render("urls_register", { 
+  res.render("urls_register", {
     user_id: req.cookies["user_id"],
-    user_email: req.cookies["email"] /////////////////////////
+    user_email: req.cookies["email"]
   });
 });
 
@@ -152,15 +163,15 @@ app.post("/register", (req, res) => {
     res.status(400).send("Missing email and password");
   } else if (emailExists(email, users)) {
     res.status(400).send('E-mail already in use');
-  } else {
+  } else { // register a new user
     const randomID = generateRandomString();
-    users[randomID] = { 
+    users[randomID] = {
       id: randomID,
       email: email,
-      password: password 
+      password: password
     };
     res.cookie("user_id", randomID);
-    res.cookie("user_email", users[randomID].email); /////////////////////////
+    res.cookie("user_email", users[randomID].email);
     res.redirect("/urls");
   }
 });
@@ -172,7 +183,7 @@ app.post("/login", (req, res) => {
     res.status(400).send("Missing email and password");
   } else {
     const user = getUserByEmail(email, users);
-    console.log('inside login handler - user is:', user);
+    // console.log('inside login handler - user is:', user);
     if (user && user.password === password) {
       res.cookie('user_id', user.id);
       res.cookie('user_email', email);
