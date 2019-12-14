@@ -1,38 +1,54 @@
 const express = require('express');
-const app = express();
 const PORT = 8080; // we're setting the default port at 8080
-const cookieParser = require('cookie-parser')
+const cookieParser = require('cookie-parser');
+const cookieSession = require('cookie-session');
+const bcrypt = require('bcrypt');
+// what bodyParser does is, it looks at the request body, and converts it into a 
+// javascript object. So we can access the object properties by dot notation or [""]!!!!!
+const bodyParser = require("body-parser");
+const app = express();
+app.set("view engine", "ejs");
+app.use(bodyParser.urlencoded({ extended: true }));
+app.use(cookieParser());
+app.use(cookieSession({
+  name: "session",
+  keys: ["myKey"],
+  maxAge: 60 * 60 * 1000 // 1 hour
+}));
 
-app.set("view engine", "ejs")
+// Global variables
 
 const urlDatabase = {
   "b2xVn2": {
-    longURL: "http://www.lighthouselabs.ca",
+    url: "http://www.lighthouselabs.ca",
     userID: "user1RandomID"
   },
   "9sm5xK": {
-    longURL: "http://www.google.com",
+    url: "http://www.google.com",
     userID: "user2RandomID"
   }
 }
-
+console.log(urlDatabase)
 const users = {
-  "pkvyb": {
-    id: "pkvyb",
+  "user1RandomID": {
+    id: "user1RandomID",
     email: "user@example.com",
     password: "purple-monkey-dinosaur"
   },
-  "pikpa": {
-    id: "pikpa",
+  "user2RandomID": {
+    id: "user2RandomID",
     email: "user2@example.com",
     password: "dishwasher-funk"
   }
 };
 
+// Helper functionsapp.set("view engine", "ejs");
+
+// check if email already is registered under another user
 const emailExists = (email, users) => {
-  console.log('email:', email);
-  for (const userID in users) {
-    console.log('user:', userID);
+  // console.log('email:', email);
+  for (let userID in users) {
+    // console.log('user:', userID);
     if (users[userID].email === email) {
       return true;
     }
@@ -40,45 +56,69 @@ const emailExists = (email, users) => {
   return false;
 };
 
+// This function returns the user id that matches
+// the given email and password
+function findUser(email, password) {
+  for (let userID in users) {
+    if (users[userID].email === email
+      && bcrypt.compareSync(password, users[user].password)) {
+      return userID;
+    }
+  }
+  return "";
+}
+
 const getUserByEmail = (email, users) => {
-  console.log('email:', email);
-  for (const userID in users) {
+  // console.log('email:', email);
+  for (let userID in users) {
     if (users[userID].email === email) {
-      console.log('userID:', userID);
-      console.log('user with that ID:', users[userID]);
+      // console.log('userID:', userID);
+      // console.log('user with that ID:', users[userID]);
       return users[userID];
     }
   }
   return null;
 };
 
-const urlsForUser = (id) => {
-  let subset = {};
+const userUrls = (id) => {
+  let myUrls = {};
   for (let url in urlDatabase) {
     if (urlDatabase[url].userID === id) {
-      subset[url] = urlDatabase[url];
+      myUrls[url] = urlDatabase[url];
     }
   }
-  return subset;
+  return myUrls;
 }
 
-// what bodyParser does is, it looks at the request body, and converts it into a 
-// javascript object. So we can access the object properties by dot notation or [""]!!!!!
-const bodyParser = require("body-parser");
-app.use(bodyParser.urlencoded({ extended: true }));
-
-app.use(cookieParser());
-
-// Function to generate a random string for new shortURLS
+// Function to generate a random string for new shortURLS or users
 function generateRandomString() {
   return Math.random().toString(36).replace(/[^a-z]+/g, '').substr(0, 5);
 }
 
+// Get request responses
 
 app.get("/", (req, res) => {
   res.send("Hello, mortal.");
 });
 
+app.get("/urls.json", (req, res) => {
+  res.json(urlDatabase);
+});
+
+app.get("/urls", (req, res) => {
+  let userID = req.cookies.user_id;
+  let urls = userUrls(userID);
+  if (!userID || !users[userID]) {
+    res.redirect("/login");
+  } else {
+    let templateVars = {
+      'user_id': req.cookies["user_id"],
+      'user_email': req.cookies["user_email"],
+      'urls': urls
+    }; // IMPORTANT when we are sending a variable to and EJS template, we need
+    res.render("urls_index", templateVars); // to enclose it in an object, even if we are sending only one variable.
+  }; // (continued from comment above) this is so we can use the key of that object in our template
+});
 app.get("/urls/new", (req, res) => {
   let userID = req.cookies.user_id;
   if (!userID || !users[userID]) {
@@ -90,27 +130,6 @@ app.get("/urls/new", (req, res) => {
     }
     res.render("urls_new", templateVars);
   }
-
-});
-
-app.get("/urls", (req, res) => {
-  let userID = req.cookies.user_id;
-  if (!userID || !users[userID]) {
-    res.redirect("/login");
-  } else {
-    let templateVars = {
-      'user_id': req.cookies["user_id"],
-      'user_email': req.cookies["user_email"],
-      'urls': urlDatabase
-    }; // IMPORTANT when we are sending a variable to and EJS template, we need
-    res.render("urls_index", templateVars); // to enclose it in an object, even if we are sending only one variable.
-  }; // (continued from comment above) this is so we can use the key of that object in our template
-});
-// this post will get the input from the /urls/new input form  
-app.post("/urls", (req, res) => {
-  let randomString = generateRandomString();
-  urlDatabase[randomString] = req.body.longURL;
-  res.redirect(`/urls/${randomString}`);
 });
 
 app.get("/urls/:id", (req, res) => {
@@ -121,17 +140,6 @@ app.get("/urls/:id", (req, res) => {
   };
   res.render("urls_show", templateVars);
 });
-
-app.post("/urls/:id", (req, res) => {
-  console.log(req.body);
-  urlDatabase[req.params.id] = req.body.longURL;
-  res.redirect('/urls');
-});
-
-app.get("/urls.json", (req, res) => {
-  res.json(urlDatabase);
-});
-
 
 app.get("/hello", (req, res) => {
   res.send("<html><body>Hello <b>Boyos</b></body></html>\n");
@@ -157,6 +165,32 @@ app.get("/u/:shortURL", (req, res) => {
   res.redirect(longURL);
 });
 
+app.get("/register", (req, res) => {
+  res.render("urls_register", {
+    user_id: req.cookies["user_id"],
+    user_email: req.cookies["email"]
+  });
+});
+
+app.get("/login", (req, res) => {
+  res.render("urls_login", { 'user_id': req.cookies["user_id"] });
+});
+
+// Post requests responses
+
+// this post will get the input from the /urls/new input form  
+app.post("/urls", (req, res) => {
+  let randomString = generateRandomString();
+  urlDatabase[randomString] = req.body.longURL;
+  res.redirect(`/urls/${randomString}`);
+});
+
+app.post("/urls/:id", (req, res) => {
+  console.log(req.body);
+  urlDatabase[req.params.id] = req.body.longURL;
+  res.redirect('/urls');
+});
+
 app.post("/urls", (req, res) => {
   let newShortURL = generateRandomString();
   urlDatabase[newShortURL] = { longURL: [req.params.longURL] }
@@ -166,13 +200,6 @@ app.post("/urls", (req, res) => {
 app.post("/urls/:shortURL/delete", (req, res) => {
   delete urlDatabase[req.params.shortURL];
   res.redirect('/urls');
-});
-
-app.get("/register", (req, res) => {
-  res.render("urls_register", {
-    user_id: req.cookies["user_id"],
-    user_email: req.cookies["email"]
-  });
 });
 
 app.post("/register", (req, res) => {
@@ -211,10 +238,6 @@ app.post("/login", (req, res) => {
       res.status(401).send('Invalid credentials');
     }
   }
-});
-
-app.get("/login", (req, res) => {
-  res.render("urls_login", { 'user_id': req.cookies["user_id"] });
 });
 
 app.post("/logout", (req, res) => {
