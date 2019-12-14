@@ -6,8 +6,14 @@ const cookieParser = require('cookie-parser')
 app.set("view engine", "ejs")
 
 const urlDatabase = {
-  "b2xVn2": "http://www.lighthouselabs.ca",
-  "9sm5xK": "http://www.google.com"
+  "b2xVn2": {
+    longURL: "http://www.lighthouselabs.ca",
+    userID: "user1RandomID"
+  },
+  "9sm5xK": {
+    longURL: "http://www.google.com",
+    userID: "user2RandomID"
+  }
 }
 
 const users = {
@@ -46,6 +52,16 @@ const getUserByEmail = (email, users) => {
   return null;
 };
 
+const urlsForUser = (id) => {
+  let subset = {};
+  for (let url in urlDatabase) {
+    if (urlDatabase[url].userID === id) {
+      subset[url] = urlDatabase[url];
+    }
+  }
+  return subset;
+}
+
 // what bodyParser does is, it looks at the request body, and converts it into a 
 // javascript object. So we can access the object properties by dot notation or [""]!!!!!
 const bodyParser = require("body-parser");
@@ -64,7 +80,6 @@ app.get("/", (req, res) => {
 });
 
 app.get("/urls/new", (req, res) => {
-  // const user_email = req.cookies["email"];
   let userID = req.cookies.user_id;
   if (!userID || !users[userID]) {
     res.redirect("/login");
@@ -73,20 +88,24 @@ app.get("/urls/new", (req, res) => {
       user_email: users[userID].email,
       user_id: userID
     }
-    res.render("urls_new", templateVars); 
+    res.render("urls_new", templateVars);
   }
 
 });
 
 app.get("/urls", (req, res) => {
-  let templateVars = {
-    'user_id': req.cookies["user_id"],
-    'user_email': req.cookies["user_email"],
-    'urls': urlDatabase
-  }; // IMPORTANT when we are sending a variable to and EJS template, we need
-  res.render("urls_index", templateVars); // to enclose it in an object, even if we are sending only one variable.
-}); // (continued from comment above) this is so we can use the key of that object in our template
-
+  let userID = req.cookies.user_id;
+  if (!userID || !users[userID]) {
+    res.redirect("/login");
+  } else {
+    let templateVars = {
+      'user_id': req.cookies["user_id"],
+      'user_email': req.cookies["user_email"],
+      'urls': urlDatabase
+    }; // IMPORTANT when we are sending a variable to and EJS template, we need
+    res.render("urls_index", templateVars); // to enclose it in an object, even if we are sending only one variable.
+  }; // (continued from comment above) this is so we can use the key of that object in our template
+});
 // this post will get the input from the /urls/new input form  
 app.post("/urls", (req, res) => {
   let randomString = generateRandomString();
