@@ -17,39 +17,6 @@ app.use(cookieSession({
   maxAge: 60 * 60 * 1000 // 1 hour
 }));
 
-// Global variables
-
-const urlDatabase = {
-  urlData: {
-    "b2xVn2": {
-      url: "http://www.lighthouselabs.ca",
-      userID: "user1RandomID"
-    },
-    "9sm5xK": {
-      url: "http://www.google.com",
-      userID: "user2RandomID"
-    }
-  }
-}
-
-const users = {
-  userData: {
-    "user1RandomID": {
-      id: "user1RandomID",
-      email: "user@example.com",
-      password: bcrypt.hashSync("purple-monkey-dinosaur", 10)
-    },
-    "user2RandomID": {
-      id: "user2RandomID",
-      email: "user2@example.com",
-      password: bcrypt.hashSync("dishwasher-funk", 10)
-    }
-  }
-
-};
-
-// Helper functionsapp.set("view engine", "ejs");
-
 // check if email already is registered under another user
 const emailExists = (email, users) => {
   // console.log('email:', email);
@@ -72,21 +39,6 @@ function findUser(email, password) {
     }
   }
   return "";
-}
-
-const userUrlsFunc = (id) => {
-  let myUrls = {};
-  for (let url in urlDatabase) {
-    if (urlDatabase[url].userID === id) {
-      myUrls[url] = urlDatabase[url];
-    }
-  }
-  return myUrls;
-}
-
-// Function to generate a random string for new shortURLS or users
-function generateRandomString() {
-  return Math.random().toString(36).replace(/[^a-z]+/g, '').substr(0, 5);
 }
 
 // Get request responses
