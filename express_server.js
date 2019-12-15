@@ -29,18 +29,6 @@ const emailExists = (email, users) => {
   return false;
 };
 
-// This function returns the user id that matches
-// the given email and password
-function findUser(email, password) {
-  for (let userID in users) {
-    if (users[userID].email === email
-      && bcrypt.compareSync(password, users[user].password)) {
-      return userID;
-    }
-  }
-  return "";
-}
-
 // Get request responses
 
 app.get("/", (req, res) => {
@@ -221,6 +209,8 @@ app.post("/logout", (req, res) => {
   res.clearCookie("user_email");
   res.redirect("/urls");
 });
+
+// Our app is listening on this port!
 
 app.listen(PORT, () => {
   console.log(`Example app listening on port: ${PORT}!`);
