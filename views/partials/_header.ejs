@@ -10,20 +10,15 @@
         <a class="nav-item nav-link" href="/urls/new">Create New URL</a>
       </div>
     </div>
-    <% if (user_id !== undefined) { %>
-    <div>Current User: <%= user_id %></div>
+    <% if (user !== undefined) { %>
+    <div>Current User: <%= user.id %></div>
     <form method="POST" action="/logout">
       <input type="submit" value="logout">
     </form>
     <% } %>
-    <% if (user_id === undefined || user_id === null) { %>
+    <% if (user === undefined || user === null) { %>
       <a class="nav-link" href="/register">Register</a>
       <a class="nav-link" href="/login">Login</a>
-      <!-- <form method="POST" action="/login">
-        <input id="username" type="text" name="username">
-        <input type="submit" value="login">
-        <input type="submit" value="logout">
-      </form> -->
     <% } %>
   
   </nav>
