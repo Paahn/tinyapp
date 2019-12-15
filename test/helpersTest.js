@@ -1,5 +1,5 @@
 const { assert } = require('chai');
-const { getUserByEmail } = require('../helper.js');
+const { emailTaken } = require('../helper.js');
 
 const testUsers = {
   "userRandomID": {
@@ -14,16 +14,16 @@ const testUsers = {
   }
 };
 
-describe('getUserByEmail', () => {
-  it('should return user with valid email', () => {
-    const user = getUserByEmail("user@example.com", testUsers);
-    const expectedOutput = "userRandomID";
-    assert.equal(user.id, expectedOutput);
+describe('emailTaken', () => {
+  it('should return true if email corresponds to a user in the database', function() {
+    const existingEmail = emailTaken("user@example.com", testUsers);
+    const expectedOutput = true;
+    assert.equal(existingEmail, expectedOutput);
   });
 
   it('should return undefined with an invalid email', () => {
-    const noUser = getUserByEmail("nonexistent@example.com", testUsers);
-    const expectedOutput = undefined;
-    assert.equal(noUser, expectedOutput);
+    const nonExistantEmail = emailTaken("fake_email@test.com", testUsers);
+    const expectedOutput = false;
+    assert.equal(nonExistantEmail, expectedOutput);
   });
 });
